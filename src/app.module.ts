@@ -1,20 +1,27 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
-import { GoodsModule } from './goods/goods.module';
-import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
 import { config } from 'dotenv';
+import { AppService } from './app.service';
+import { ProductModule } from './product/product.module';
 config();
-const { DB_URI } = process.env;
+const {TYPEORM_PORT, TYPEORM_PASSWORD, TYPEORM_DATABASE} = process.env;
+
 @Module({
-  imports: [
-    GoodsModule,
-    MongooseModule.forRoot(
-      // `mongodb+srv://root:root@cluster0.0va7l.mongodb.net/try?retryWrites=true&w=majority`,
-      `${DB_URI}`
-    ),
-  ],
   controllers: [AppController],
   providers: [AppService],
+  imports: [
+    ProductModule,  
+    TypeOrmModule.forRoot({
+      type: 'postgres' as any,
+      host: 'localhost',
+      port: Number(TYPEORM_PORT),
+      username: `${TYPEORM_DATABASE}`,
+      password: `${TYPEORM_PASSWORD}`,
+      database: 'testNest',
+      entities: ['dist/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
+  ],
 })
 export class AppModule {}
